@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "*.*.*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -29,20 +30,28 @@ jobs:
       - name: Build (type-check + bundle)
         run: npm run build
 
-      - name: Verify tag matches manifest version
+      - name: Determine version
+        id: version
         run: |
           MANIFEST_VERSION="$(node -p "require('./manifest.json').version")"
-          TAG="${GITHUB_REF_NAME}"
-          if [ "$MANIFEST_VERSION" != "$TAG" ]; then
-            echo "::error::Tag ($TAG) does not match manifest.json version ($MANIFEST_VERSION)."
-            exit 1
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            VERSION="${GITHUB_REF_NAME}"
+            if [ "$VERSION" != "$MANIFEST_VERSION" ]; then
+              echo "::error::Tag ($VERSION) does not match manifest.json version ($MANIFEST_VERSION)."
+              exit 1
+            fi
+          else
+            VERSION="$MANIFEST_VERSION"
           fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Create release with plugin assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" \
-            --title "${GITHUB_REF_NAME}" \
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --target "$GITHUB_SHA" \
             --generate-notes \
             main.js manifest.json styles.css
