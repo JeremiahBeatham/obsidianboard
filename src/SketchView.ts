@@ -17,9 +17,9 @@ import {
 	parseDoc,
 	serializeDoc,
 } from "./model";
-import type ObsidianBoardPlugin from "./main";
+import type TabulaRasaPlugin from "./main";
 
-export const VIEW_TYPE_SKETCH = "obsidianboard-sketch-view";
+export const VIEW_TYPE_SKETCH = "tabula-rasa-sketch-view";
 
 const PALETTE = [
 	"#000000",
@@ -39,7 +39,7 @@ const BRUSH_SIZES = [3, 6, 12, 24];
  * as the file's text content.
  */
 export class SketchView extends TextFileView {
-	private plugin: ObsidianBoardPlugin;
+	private plugin: TabulaRasaPlugin;
 	private doc: SketchDoc;
 	private canvas: SketchCanvas | null = null;
 	private canvasHost: HTMLElement | null = null;
@@ -52,7 +52,7 @@ export class SketchView extends TextFileView {
 	private undoBtn: HTMLElement | null = null;
 	private redoBtn: HTMLElement | null = null;
 
-	constructor(leaf: WorkspaceLeaf, plugin: ObsidianBoardPlugin) {
+	constructor(leaf: WorkspaceLeaf, plugin: TabulaRasaPlugin) {
 		super(leaf);
 		this.plugin = plugin;
 		this.doc = createEmptyDoc(
@@ -73,7 +73,7 @@ export class SketchView extends TextFileView {
 	}
 
 	getIcon(): string {
-		return "pencil";
+		return "brush";
 	}
 
 	getDisplayText(): string {
@@ -110,11 +110,11 @@ export class SketchView extends TextFileView {
 
 	async onOpen(): Promise<void> {
 		this.contentEl.empty();
-		this.contentEl.addClass("obsidianboard-view");
+		this.contentEl.addClass("tabula-rasa-view");
 		this.applyThemeDefaultColor();
 		this.buildToolbar();
 		this.canvasHost = this.contentEl.createDiv({
-			cls: "obsidianboard-canvas-host",
+			cls: "tabula-rasa-canvas-host",
 		});
 		this.rebuildCanvas();
 
@@ -156,14 +156,14 @@ export class SketchView extends TextFileView {
 	// --- toolbar --------------------------------------------------------
 
 	private buildToolbar(): void {
-		const bar = this.contentEl.createDiv({ cls: "obsidianboard-toolbar" });
+		const bar = this.contentEl.createDiv({ cls: "tabula-rasa-toolbar" });
 
 		const tools: { tool: ToolName; icon: string; label: string }[] = [
 			{ tool: "pen", icon: "pencil", label: "Pen" },
 			{ tool: "highlighter", icon: "highlighter", label: "Highlighter" },
 			{ tool: "eraser", icon: "eraser", label: "Eraser" },
 		];
-		const toolGroup = bar.createDiv({ cls: "obsidianboard-group" });
+		const toolGroup = bar.createDiv({ cls: "tabula-rasa-group" });
 		for (const t of tools) {
 			const btn = this.makeButton(toolGroup, t.icon, t.label, () =>
 				this.selectTool(t.tool),
@@ -171,10 +171,10 @@ export class SketchView extends TextFileView {
 			this.toolButtons.set(t.tool, btn);
 		}
 
-		const colorGroup = bar.createDiv({ cls: "obsidianboard-group" });
+		const colorGroup = bar.createDiv({ cls: "tabula-rasa-group" });
 		for (const color of PALETTE) {
 			const swatch = colorGroup.createEl("button", {
-				cls: "obsidianboard-swatch",
+				cls: "tabula-rasa-swatch",
 				attr: { "aria-label": color, type: "button" },
 			});
 			swatch.style.backgroundColor = color;
@@ -182,13 +182,13 @@ export class SketchView extends TextFileView {
 			this.colorButtons.set(color, swatch);
 		}
 
-		const sizeGroup = bar.createDiv({ cls: "obsidianboard-group" });
+		const sizeGroup = bar.createDiv({ cls: "tabula-rasa-group" });
 		for (const size of BRUSH_SIZES) {
 			const btn = sizeGroup.createEl("button", {
-				cls: "obsidianboard-size",
+				cls: "tabula-rasa-size",
 				attr: { "aria-label": `Size ${size}`, type: "button" },
 			});
-			const dot = btn.createDiv({ cls: "obsidianboard-size-dot" });
+			const dot = btn.createDiv({ cls: "tabula-rasa-size-dot" });
 			const px = Math.max(4, Math.min(22, size));
 			dot.style.width = `${px}px`;
 			dot.style.height = `${px}px`;
@@ -196,7 +196,7 @@ export class SketchView extends TextFileView {
 			this.sizeButtons.set(size, btn);
 		}
 
-		const actionGroup = bar.createDiv({ cls: "obsidianboard-group" });
+		const actionGroup = bar.createDiv({ cls: "tabula-rasa-group" });
 		this.undoBtn = this.makeButton(actionGroup, "undo-2", "Undo", () =>
 			this.canvas?.undo(),
 		);
@@ -228,7 +228,7 @@ export class SketchView extends TextFileView {
 		onClick: () => void,
 	): HTMLElement {
 		const btn = parent.createEl("button", {
-			cls: "obsidianboard-btn",
+			cls: "tabula-rasa-btn",
 			attr: { "aria-label": label, type: "button" },
 		});
 		setIcon(btn, icon);

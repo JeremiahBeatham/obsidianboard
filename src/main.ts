@@ -9,8 +9,8 @@ import {
 } from "obsidian";
 import {
 	DEFAULT_SETTINGS,
-	ObsidianBoardSettings,
-	ObsidianBoardSettingTab,
+	TabulaRasaSettings,
+	TabulaRasaSettingTab,
 } from "./settings";
 import { SketchView, VIEW_TYPE_SKETCH } from "./SketchView";
 import {
@@ -21,8 +21,8 @@ import {
 } from "./model";
 import { renderDocToPngBlob, renderDocToSvg } from "./export";
 
-export default class ObsidianBoardPlugin extends Plugin {
-	settings!: ObsidianBoardSettings;
+export default class TabulaRasaPlugin extends Plugin {
+	settings!: TabulaRasaSettings;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -39,7 +39,7 @@ export default class ObsidianBoardPlugin extends Plugin {
 		// fallback it shows for unknown file types.
 		this.registerSketchEmbed();
 
-		this.addRibbonIcon("pencil", "New sketch", () => {
+		this.addRibbonIcon("brush", "New sketch", () => {
 			void this.createAndOpenSketch();
 		});
 
@@ -70,7 +70,7 @@ export default class ObsidianBoardPlugin extends Plugin {
 			},
 		});
 
-		this.addSettingTab(new ObsidianBoardSettingTab(this.app, this));
+		this.addSettingTab(new TabulaRasaSettingTab(this.app, this));
 	}
 
 	onunload(): void {
@@ -181,7 +181,7 @@ export default class ObsidianBoardPlugin extends Plugin {
 			.embedRegistry;
 		if (!registry?.registerExtension) {
 			console.warn(
-				"ObsidianBoard: embed registry unavailable; sketch previews disabled.",
+				"Tabula Rasa: embed registry unavailable; sketch previews disabled.",
 			);
 			return;
 		}
@@ -249,7 +249,7 @@ class SketchEmbed extends MarkdownRenderChild {
 
 	constructor(
 		containerEl: HTMLElement,
-		private plugin: ObsidianBoardPlugin,
+		private plugin: TabulaRasaPlugin,
 		private file: TFile,
 	) {
 		super(containerEl);
@@ -270,7 +270,7 @@ class SketchEmbed extends MarkdownRenderChild {
 		if (this.wired) return;
 		this.wired = true;
 		this.containerEl.empty();
-		this.containerEl.addClass("obsidianboard-embed");
+		this.containerEl.addClass("tabula-rasa-embed");
 		this.containerEl.addEventListener("click", (evt) => {
 			evt.preventDefault();
 			evt.stopPropagation();

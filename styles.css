@@ -1,11 +1,11 @@
-.obsidianboard-view {
+.tabula-rasa-view {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
 	padding: 0;
 }
 
-.obsidianboard-toolbar {
+.tabula-rasa-toolbar {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -17,13 +17,13 @@
 	padding-top: max(8px, env(safe-area-inset-top));
 }
 
-.obsidianboard-group {
+.tabula-rasa-group {
 	display: flex;
 	align-items: center;
 	gap: 6px;
 }
 
-.obsidianboard-btn {
+.tabula-rasa-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -37,21 +37,21 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-.obsidianboard-btn:hover {
+.tabula-rasa-btn:hover {
 	background: var(--background-modifier-hover);
 }
 
-.obsidianboard-btn.is-active {
+.tabula-rasa-btn.is-active {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 }
 
-.obsidianboard-btn.is-disabled {
+.tabula-rasa-btn.is-disabled {
 	opacity: 0.35;
 	pointer-events: none;
 }
 
-.obsidianboard-swatch {
+.tabula-rasa-swatch {
 	width: 30px;
 	height: 30px;
 	border-radius: 50%;
@@ -61,12 +61,12 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-.obsidianboard-swatch.is-active {
+.tabula-rasa-swatch.is-active {
 	border-color: var(--interactive-accent);
 	box-shadow: 0 0 0 2px var(--interactive-accent);
 }
 
-.obsidianboard-size {
+.tabula-rasa-size {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -79,20 +79,20 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-.obsidianboard-size:hover {
+.tabula-rasa-size:hover {
 	background: var(--background-modifier-hover);
 }
 
-.obsidianboard-size.is-active {
+.tabula-rasa-size.is-active {
 	background: var(--background-modifier-active-hover);
 }
 
-.obsidianboard-size-dot {
+.tabula-rasa-size-dot {
 	border-radius: 50%;
 	background: var(--text-normal);
 }
 
-.obsidianboard-canvas-host {
+.tabula-rasa-canvas-host {
 	flex: 1;
 	display: flex;
 	align-items: center;
@@ -102,7 +102,7 @@
 	min-height: 0;
 }
 
-.obsidianboard-canvas {
+.tabula-rasa-canvas {
 	display: block;
 	width: 100%;
 	height: 100%;
@@ -115,14 +115,14 @@
 }
 
 /* Inline preview of a .sketch file embedded in a note. */
-.obsidianboard-embed {
+.tabula-rasa-embed {
 	display: block;
 	cursor: pointer;
 	line-height: 0;
 	margin: 4px 0;
 }
 
-.obsidianboard-embed svg {
+.tabula-rasa-embed svg {
 	display: block;
 	max-width: 100%;
 	height: auto;
