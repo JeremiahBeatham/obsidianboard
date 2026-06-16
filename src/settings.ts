@@ -1,7 +1,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import type ObsidianBoardPlugin from "./main";
+import type TabulaRasaPlugin from "./main";
 
-export interface ObsidianBoardSettings {
+export interface TabulaRasaSettings {
 	/** Folder where new .sketch files (and PNG exports) are created. Empty = vault root. */
 	sketchFolder: string;
 	defaultColor: string;
@@ -22,7 +22,7 @@ export interface ObsidianBoardSettings {
 	noteInsertMode: "embed" | "link";
 }
 
-export const DEFAULT_SETTINGS: ObsidianBoardSettings = {
+export const DEFAULT_SETTINGS: TabulaRasaSettings = {
 	sketchFolder: "Sketches",
 	defaultColor: "#000000",
 	matchPenColorToTheme: true,
@@ -35,10 +35,10 @@ export const DEFAULT_SETTINGS: ObsidianBoardSettings = {
 	noteInsertMode: "embed",
 };
 
-export class ObsidianBoardSettingTab extends PluginSettingTab {
-	plugin: ObsidianBoardPlugin;
+export class TabulaRasaSettingTab extends PluginSettingTab {
+	plugin: TabulaRasaPlugin;
 
-	constructor(app: App, plugin: ObsidianBoardPlugin) {
+	constructor(app: App, plugin: TabulaRasaPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}

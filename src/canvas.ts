@@ -74,7 +74,7 @@ export class SketchCanvas {
 		this.brush = brush;
 		this.options = options;
 
-		this.el = parent.createEl("canvas", { cls: "obsidianboard-canvas" });
+		this.el = parent.createEl("canvas", { cls: "tabula-rasa-canvas" });
 		const ctx = this.el.getContext("2d");
 		if (!ctx) throw new Error("Could not acquire 2D drawing context");
 		this.ctx = ctx;

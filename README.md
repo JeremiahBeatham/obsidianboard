@@ -1,8 +1,19 @@
-# ObsidianBoard
+# Tabula Rasa
 
 Finger- and Apple Pencil-friendly sketching for [Obsidian](https://obsidian.md).
 Draw the way you do in the native iOS Notes app — directly in your vault — then
 embed sketches in notes or keep them as standalone, re-editable files.
+
+> **Status:** working MVP (v0.2.0). Install via [BRAT](https://github.com/TfTHacker/obsidian42-brat)
+> today; a community-plugins submission is in progress. See where we are and where
+> we're going in **[ROADMAP.md](ROADMAP.md)**.
+
+## Screenshots
+
+<!-- TODO: add screenshots / a short GIF of drawing + an inline embed in a note.
+     Drop images in an `assets/` folder and reference them here, e.g.:
+     ![Drawing on iPhone](assets/draw.png)
+     ![Inline preview in a note](assets/embed.png) -->
 
 ## Features
 
@@ -53,15 +64,31 @@ embed sketches in notes or keep them as standalone, re-editable files.
 Settings let you choose the sketch folder, default color/brush size, palm
 rejection, canvas size, background, and PNG export resolution.
 
-## Installation (manual / before community-store listing)
+## Installation
+
+### Via BRAT (recommended for now)
+
+Until Tabula Rasa is in the community store, install it with
+[BRAT](https://github.com/TfTHacker/obsidian42-brat): add the beta plugin
+`jeremiahbeatham/obsidianboard`, then enable **Tabula Rasa** in
+*Settings → Community plugins*. BRAT keeps it updated as new releases ship.
+
+### Manual
 
 1. Build the plugin: `npm install && npm run build`.
 2. Copy `manifest.json`, `main.js`, and `styles.css` into
-   `<your-vault>/.obsidian/plugins/obsidianboard/`.
-3. Reload Obsidian and enable **ObsidianBoard** in *Settings → Community plugins*.
+   `<your-vault>/.obsidian/plugins/tabula-rasa/`.
+3. Reload Obsidian and enable **Tabula Rasa** in *Settings → Community plugins*.
 
-To develop on iPhone, sync the plugin folder to your mobile vault (e.g. via
+To use it on iPhone, sync the plugin folder to your mobile vault (e.g. via
 Obsidian Sync or a git client) and enable it there.
+
+## Roadmap
+
+Tabula Rasa is an actively evolving MVP. See **[ROADMAP.md](ROADMAP.md)** for the
+shipped feature set and what's planned next (canvas resize, richer brush/color
+pickers, pinch-to-rotate, eraser modes, a selection tool, and smart shape
+snapping).
 
 ## Development
 
