@@ -1,6 +1,5 @@
 import {
 	Editor,
-	MarkdownPostProcessorContext,
 	MarkdownRenderChild,
 	Notice,
 	Plugin,
@@ -35,9 +34,10 @@ export default class ObsidianBoardPlugin extends Plugin {
 		this.registerExtensions([SKETCH_EXTENSION], VIEW_TYPE_SKETCH);
 
 		// Render `![[…sketch]]` embeds as a live inline preview of the canvas.
-		this.registerMarkdownPostProcessor((el, ctx) => {
-			this.renderSketchEmbeds(el, ctx);
-		});
+		// We register a real embed handler (instead of a markdown post-processor)
+		// so Obsidian uses our renderer rather than the generic "file in a box"
+		// fallback it shows for unknown file types.
+		this.registerSketchEmbed();
 
 		this.addRibbonIcon("pencil", "New sketch", () => {
 			void this.createAndOpenSketch();
@@ -170,25 +170,25 @@ export default class ObsidianBoardPlugin extends Plugin {
 
 	// --- inline embed rendering ----------------------------------------
 
-	/** Replace internal embeds pointing at .sketch files with a live SVG preview. */
-	private renderSketchEmbeds(
-		el: HTMLElement,
-		ctx: MarkdownPostProcessorContext,
-	): void {
-		const embeds = el.findAll(".internal-embed");
-		for (const embed of embeds) {
-			const src = embed.getAttribute("src");
-			if (!src) continue;
-			const file = this.app.metadataCache.getFirstLinkpathDest(
-				src,
-				ctx.sourcePath,
+	/**
+	 * Teach Obsidian to render `.sketch` embeds as a live SVG preview. We hook the
+	 * (internal) embed registry so our renderer replaces the generic file-embed
+	 * box for both Reading view and Live Preview. The registration is undone on
+	 * unload.
+	 */
+	private registerSketchEmbed(): void {
+		const registry = (this.app as unknown as { embedRegistry?: EmbedRegistry })
+			.embedRegistry;
+		if (!registry?.registerExtension) {
+			console.warn(
+				"ObsidianBoard: embed registry unavailable; sketch previews disabled.",
 			);
-			if (!(file instanceof TFile) || file.extension !== SKETCH_EXTENSION) {
-				continue;
-			}
-			embed.empty();
-			ctx.addChild(new SketchEmbed(embed, this, file));
+			return;
 		}
+		registry.registerExtension(SKETCH_EXTENSION, (ctx, file) =>
+			new SketchEmbed(ctx.containerEl, this, file),
+		);
+		this.register(() => registry.unregisterExtension?.(SKETCH_EXTENSION));
 	}
 
 	// --- exporting ------------------------------------------------------
@@ -230,11 +230,23 @@ export default class ObsidianBoardPlugin extends Plugin {
 	}
 }
 
+/** Minimal shape of Obsidian's (internal) embed registry that we depend on. */
+interface EmbedRegistry {
+	registerExtension?(
+		ext: string,
+		creator: (ctx: { containerEl: HTMLElement }, file: TFile) => SketchEmbed,
+	): void;
+	unregisterExtension?(ext: string): void;
+}
+
 /**
  * Renders a .sketch file inline inside a note as an SVG preview, and keeps it
  * in sync when the underlying sketch is edited. Clicking opens the editor.
+ * `loadFile` is invoked by the embed registry when the embed is (re)loaded.
  */
 class SketchEmbed extends MarkdownRenderChild {
+	private wired = false;
+
 	constructor(
 		containerEl: HTMLElement,
 		private plugin: ObsidianBoardPlugin,
@@ -244,13 +256,26 @@ class SketchEmbed extends MarkdownRenderChild {
 	}
 
 	onload(): void {
+		this.wire();
+		void this.render();
+	}
+
+	/** Called by Obsidian's embed registry to (re)render the file. */
+	async loadFile(): Promise<void> {
+		this.wire();
+		await this.render();
+	}
+
+	private wire(): void {
+		if (this.wired) return;
+		this.wired = true;
+		this.containerEl.empty();
 		this.containerEl.addClass("obsidianboard-embed");
 		this.containerEl.addEventListener("click", (evt) => {
 			evt.preventDefault();
 			evt.stopPropagation();
 			void this.plugin.app.workspace.getLeaf("tab").openFile(this.file);
 		});
-		void this.render();
 		// Refresh the preview whenever the sketch is saved elsewhere.
 		this.registerEvent(
 			this.plugin.app.vault.on("modify", (f) => {
@@ -270,6 +295,7 @@ class SketchEmbed extends MarkdownRenderChild {
 			this.containerEl.appendChild(svg);
 		} catch (e) {
 			console.error("Failed to render sketch embed", e);
+			this.containerEl.empty();
 			this.containerEl.setText("Could not render sketch preview.");
 		}
 	}
