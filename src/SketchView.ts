@@ -18,6 +18,7 @@ import {
 	serializeDoc,
 } from "./model";
 import type TabulaRasaPlugin from "./main";
+import { TABULA_RASA_ICON_ID } from "./icon";
 
 export const VIEW_TYPE_SKETCH = "tabula-rasa-sketch-view";
 
@@ -73,7 +74,7 @@ export class SketchView extends TextFileView {
 	}
 
 	getIcon(): string {
-		return "brush";
+		return TABULA_RASA_ICON_ID;
 	}
 
 	getDisplayText(): string {
