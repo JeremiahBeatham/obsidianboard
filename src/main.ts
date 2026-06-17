@@ -20,12 +20,15 @@ import {
 	serializeDoc,
 } from "./model";
 import { renderDocToPngBlob, renderDocToSvg } from "./export";
+import { TABULA_RASA_ICON_ID, registerTabulaRasaIcon } from "./icon";
 
 export default class TabulaRasaPlugin extends Plugin {
 	settings!: TabulaRasaSettings;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
+
+		registerTabulaRasaIcon();
 
 		this.registerView(
 			VIEW_TYPE_SKETCH,
@@ -39,13 +42,14 @@ export default class TabulaRasaPlugin extends Plugin {
 		// fallback it shows for unknown file types.
 		this.registerSketchEmbed();
 
-		this.addRibbonIcon("brush", "New sketch", () => {
+		this.addRibbonIcon(TABULA_RASA_ICON_ID, "New sketch", () => {
 			void this.createAndOpenSketch();
 		});
 
 		this.addCommand({
 			id: "create-sketch",
 			name: "Create new sketch",
+			icon: TABULA_RASA_ICON_ID,
 			callback: () => {
 				void this.createAndOpenSketch();
 			},
@@ -54,6 +58,7 @@ export default class TabulaRasaPlugin extends Plugin {
 		this.addCommand({
 			id: "create-sketch-embed",
 			name: "Create new sketch in current note",
+			icon: TABULA_RASA_ICON_ID,
 			editorCallback: (editor: Editor, ctx) => {
 				void this.createAndLinkSketch(editor, ctx.file ?? null);
 			},
@@ -62,6 +67,7 @@ export default class TabulaRasaPlugin extends Plugin {
 		this.addCommand({
 			id: "export-sketch-svg",
 			name: "Export current sketch as SVG",
+			icon: "download",
 			checkCallback: (checking: boolean) => {
 				const view = this.app.workspace.getActiveViewOfType(SketchView);
 				if (!view || !view.file) return false;
