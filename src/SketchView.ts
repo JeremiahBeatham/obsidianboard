@@ -42,6 +42,16 @@ const MIN_BRUSH_SIZE = 1;
 const MAX_BRUSH_SIZE = 40;
 const SIZE_PRESETS = [2, 6, 12, 24, 40];
 
+/** Coerce a color to the `#rrggbb` form an <input type="color"> requires. */
+function normalizeHex(color: string): string {
+	const c = color.trim().toLowerCase();
+	if (/^#[0-9a-f]{6}$/.test(c)) return c;
+	// Expand shorthand #rgb -> #rrggbb.
+	const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/.exec(c);
+	if (short) return `#${short[1]}${short[1]}${short[2]}${short[2]}${short[3]}${short[3]}`;
+	return "#000000";
+}
+
 /**
  * Full-screen editor for `.sketch` files. Extends TextFileView so Obsidian
  * handles file load/save and the dirty indicator; we serialize the SketchDoc
@@ -60,14 +70,22 @@ export class SketchView extends TextFileView {
 	private undoBtn: HTMLElement | null = null;
 	private redoBtn: HTMLElement | null = null;
 
+	// Shared popover (brush size / color picker).
+	private popover: HTMLElement | null = null;
+	private popoverTrigger: HTMLElement | null = null;
+	private closePopoverHandler: ((e: Event) => void) | null = null;
+
 	// Brush-size popover state.
 	private sizeTriggerDot: HTMLElement | null = null;
-	private sizePopover: HTMLElement | null = null;
 	private sizeSlider: HTMLInputElement | null = null;
 	private sizePreviewDot: HTMLElement | null = null;
 	private sizeValueLabel: HTMLElement | null = null;
 	private sizePresetButtons = new Map<number, HTMLElement>();
-	private closeSizePopoverHandler: ((e: Event) => void) | null = null;
+
+	// Color popover state.
+	private colorTrigger: HTMLElement | null = null;
+	private colorInput: HTMLInputElement | null = null;
+	private recentsRow: HTMLElement | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: TabulaRasaPlugin) {
 		super(leaf);
@@ -140,7 +158,7 @@ export class SketchView extends TextFileView {
 	}
 
 	async onClose(): Promise<void> {
-		this.closeSizePopover();
+		this.closePopover();
 		this.resizeObserver?.disconnect();
 		this.resizeObserver = null;
 		// Persist the .sketch source so leaving/closing always keeps your work.
@@ -199,6 +217,7 @@ export class SketchView extends TextFileView {
 			swatch.addEventListener("click", () => this.selectColor(color));
 			this.colorButtons.set(color, swatch);
 		}
+		this.buildColorControl(colorGroup);
 
 		const sizeGroup = bar.createDiv({ cls: "tabula-rasa-group" });
 		this.buildSizeControl(sizeGroup);
@@ -263,12 +282,161 @@ export class SketchView extends TextFileView {
 		);
 	}
 
-	private selectColor(color: string): void {
+	// --- color ----------------------------------------------------------
+
+	/** Trigger swatch (rainbow ring) that opens the custom-color popover. */
+	private buildColorControl(parent: HTMLElement): void {
+		const trigger = parent.createEl("button", {
+			cls: "tabula-rasa-swatch tabula-rasa-color-trigger",
+			attr: { "aria-label": "More colors", type: "button" },
+		});
+		this.colorTrigger = trigger;
+		trigger.addEventListener("click", () =>
+			this.togglePopover(trigger, (pop) => this.buildColorPopover(pop)),
+		);
+	}
+
+	private buildColorPopover(pop: HTMLElement): void {
+		pop.createDiv({ cls: "tabula-rasa-popover-label", text: "Custom color" });
+		const input = pop.createEl("input", {
+			cls: "tabula-rasa-color-input",
+			attr: { type: "color", "aria-label": "Custom color" },
+		});
+		this.colorInput = input;
+		input.value = normalizeHex(this.brush.color);
+		// Live update while dragging; commit to recents when the picker closes.
+		input.addEventListener("input", () => this.selectColor(input.value));
+		input.addEventListener("change", () =>
+			this.selectColor(input.value, true),
+		);
+
+		pop.createDiv({ cls: "tabula-rasa-popover-label", text: "Recent" });
+		this.recentsRow = pop.createDiv({ cls: "tabula-rasa-recents" });
+		this.renderRecents();
+	}
+
+	private renderRecents(): void {
+		const row = this.recentsRow;
+		if (!row) return;
+		row.empty();
+		const recents = this.plugin.settings.recentColors;
+		if (!recents.length) {
+			row.createSpan({
+				cls: "tabula-rasa-recents-empty",
+				text: "No recent colors yet.",
+			});
+			return;
+		}
+		for (const color of recents) {
+			const sw = row.createEl("button", {
+				cls: "tabula-rasa-swatch",
+				attr: { "aria-label": color, type: "button" },
+			});
+			sw.style.backgroundColor = color;
+			sw.toggleClass("is-active", color === this.brush.color);
+			sw.addEventListener("click", () => this.selectColor(color));
+		}
+	}
+
+	private addRecentColor(color: string): void {
+		if (PALETTE.includes(color)) return;
+		const norm = color.toLowerCase();
+		const list = this.plugin.settings.recentColors.filter(
+			(c) => c.toLowerCase() !== norm,
+		);
+		list.unshift(color);
+		this.plugin.settings.recentColors = list.slice(0, 8);
+		void this.plugin.saveSettings();
+		this.renderRecents();
+	}
+
+	private selectColor(color: string, addToRecents = false): void {
 		this.brush.color = color;
 		this.canvas?.setBrush(this.brush);
+		if (addToRecents) this.addRecentColor(color);
+		this.updateColorUI();
+	}
+
+	/** Reflect the active color on the palette, the trigger ring, and the picker. */
+	private updateColorUI(): void {
+		const color = this.brush.color;
 		this.colorButtons.forEach((btn, key) =>
 			btn.toggleClass("is-active", key === color),
 		);
+		this.colorTrigger?.style.setProperty("--tr-current-color", color);
+		if (this.colorInput) {
+			const hex = normalizeHex(color);
+			if (this.colorInput.value !== hex) this.colorInput.value = hex;
+		}
+	}
+
+	// --- shared popover -------------------------------------------------
+
+	private togglePopover(
+		trigger: HTMLElement,
+		build: (pop: HTMLElement) => void,
+	): void {
+		if (this.popover && this.popoverTrigger === trigger) this.closePopover();
+		else this.openPopover(trigger, build);
+	}
+
+	private openPopover(
+		trigger: HTMLElement,
+		build: (pop: HTMLElement) => void,
+	): void {
+		this.closePopover();
+		const pop = this.contentEl.createDiv({ cls: "tabula-rasa-popover" });
+		this.popover = pop;
+		this.popoverTrigger = trigger;
+		build(pop);
+		this.positionPopover(pop, trigger);
+
+		// Dismiss on outside interaction or Escape.
+		this.closePopoverHandler = (e: Event) => {
+			if (e instanceof KeyboardEvent) {
+				if (e.key === "Escape") this.closePopover();
+				return;
+			}
+			const target = e.target as Node;
+			if (pop.contains(target) || trigger.contains(target)) return;
+			this.closePopover();
+		};
+		document.addEventListener("pointerdown", this.closePopoverHandler, true);
+		document.addEventListener("keydown", this.closePopoverHandler, true);
+	}
+
+	private positionPopover(pop: HTMLElement, trigger: HTMLElement): void {
+		const host = this.contentEl.getBoundingClientRect();
+		const tr = trigger.getBoundingClientRect();
+		pop.style.top = `${tr.bottom - host.top + 6}px`;
+		const maxLeft = Math.max(8, host.width - pop.offsetWidth - 8);
+		const left = Math.min(Math.max(8, tr.left - host.left), maxLeft);
+		pop.style.left = `${left}px`;
+	}
+
+	private closePopover(): void {
+		if (this.closePopoverHandler) {
+			document.removeEventListener(
+				"pointerdown",
+				this.closePopoverHandler,
+				true,
+			);
+			document.removeEventListener(
+				"keydown",
+				this.closePopoverHandler,
+				true,
+			);
+			this.closePopoverHandler = null;
+		}
+		this.popover?.remove();
+		this.popover = null;
+		this.popoverTrigger = null;
+		this.sizeSlider = null;
+		this.sizePreviewDot = null;
+		this.sizeValueLabel = null;
+		this.sizePresetButtons.clear();
+		this.colorInput = null;
+		this.recentsRow = null;
 	}
 
 	// --- brush size -----------------------------------------------------
@@ -280,18 +448,12 @@ export class SketchView extends TextFileView {
 			attr: { "aria-label": "Brush size", type: "button" },
 		});
 		this.sizeTriggerDot = trigger.createDiv({ cls: "tabula-rasa-size-dot" });
-		trigger.addEventListener("click", () => this.toggleSizePopover(trigger));
+		trigger.addEventListener("click", () =>
+			this.togglePopover(trigger, (pop) => this.buildSizePopover(pop)),
+		);
 	}
 
-	private toggleSizePopover(trigger: HTMLElement): void {
-		if (this.sizePopover) this.closeSizePopover();
-		else this.openSizePopover(trigger);
-	}
-
-	private openSizePopover(trigger: HTMLElement): void {
-		const pop = this.contentEl.createDiv({ cls: "tabula-rasa-popover" });
-		this.sizePopover = pop;
-
+	private buildSizePopover(pop: HTMLElement): void {
 		const preview = pop.createDiv({ cls: "tabula-rasa-size-preview" });
 		this.sizePreviewDot = preview.createDiv({
 			cls: "tabula-rasa-size-preview-dot",
@@ -328,52 +490,7 @@ export class SketchView extends TextFileView {
 			this.sizePresetButtons.set(size, b);
 		}
 
-		this.positionPopover(pop, trigger);
 		this.updateSizeUI();
-
-		// Dismiss on outside interaction or Escape.
-		this.closeSizePopoverHandler = (e: Event) => {
-			if (e instanceof KeyboardEvent) {
-				if (e.key === "Escape") this.closeSizePopover();
-				return;
-			}
-			const target = e.target as Node;
-			if (pop.contains(target) || trigger.contains(target)) return;
-			this.closeSizePopover();
-		};
-		document.addEventListener("pointerdown", this.closeSizePopoverHandler, true);
-		document.addEventListener("keydown", this.closeSizePopoverHandler, true);
-	}
-
-	private positionPopover(pop: HTMLElement, trigger: HTMLElement): void {
-		const host = this.contentEl.getBoundingClientRect();
-		const tr = trigger.getBoundingClientRect();
-		pop.style.top = `${tr.bottom - host.top + 6}px`;
-		const maxLeft = Math.max(8, host.width - pop.offsetWidth - 8);
-		const left = Math.min(Math.max(8, tr.left - host.left), maxLeft);
-		pop.style.left = `${left}px`;
-	}
-
-	private closeSizePopover(): void {
-		if (this.closeSizePopoverHandler) {
-			document.removeEventListener(
-				"pointerdown",
-				this.closeSizePopoverHandler,
-				true,
-			);
-			document.removeEventListener(
-				"keydown",
-				this.closeSizePopoverHandler,
-				true,
-			);
-			this.closeSizePopoverHandler = null;
-		}
-		this.sizePopover?.remove();
-		this.sizePopover = null;
-		this.sizeSlider = null;
-		this.sizePreviewDot = null;
-		this.sizeValueLabel = null;
-		this.sizePresetButtons.clear();
 	}
 
 	private selectSize(size: number): void {
