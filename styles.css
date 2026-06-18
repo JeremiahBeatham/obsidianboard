@@ -139,6 +139,58 @@
 	gap: 6px;
 }
 
+/* Color picker: the "more colors" trigger shows the current color inside a
+   rainbow ring so it reads as a color chooser. */
+.tabula-rasa-color-trigger {
+	border: 3px solid transparent;
+	background-image:
+		linear-gradient(
+			var(--tr-current-color, var(--text-normal)),
+			var(--tr-current-color, var(--text-normal))
+		),
+		conic-gradient(
+			from 0deg,
+			#ff0000,
+			#ffff00,
+			#00ff00,
+			#00ffff,
+			#0000ff,
+			#ff00ff,
+			#ff0000
+		);
+	background-origin: border-box;
+	background-clip: padding-box, border-box;
+}
+
+.tabula-rasa-popover-label {
+	align-self: flex-start;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--text-muted);
+}
+
+.tabula-rasa-color-input {
+	width: 100%;
+	height: 44px;
+	padding: 0;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	background: var(--background-primary);
+	cursor: pointer;
+}
+
+.tabula-rasa-recents {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	width: 100%;
+}
+
+.tabula-rasa-recents-empty {
+	font-size: 12px;
+	color: var(--text-faint);
+}
+
 .tabula-rasa-canvas-host {
 	flex: 1;
 	display: flex;

@@ -25,11 +25,12 @@ issues. Phases are intent, not hard commitments, and may reorder based on feedba
   ([#8](https://github.com/JeremiahBeatham/TabulaRasa/issues/8), v0.3.0).
 - Brush-size picker: slider, presets, and live preview in a popover
   ([#10](https://github.com/JeremiahBeatham/TabulaRasa/issues/10), v0.4.0).
+- Color picker: custom color + recent colors alongside the palette
+  ([#11](https://github.com/JeremiahBeatham/TabulaRasa/issues/11), v0.5.0).
 
 ## 🔜 Next (UX polish)
 
 - [#7 — Audit: which controls belong in settings vs on the canvas](https://github.com/JeremiahBeatham/TabulaRasa/issues/7)
-- [#11 — Better brush-color selection UX (custom picker + recents)](https://github.com/JeremiahBeatham/TabulaRasa/issues/11)
 
 ## 🧭 Later (bigger features)
 

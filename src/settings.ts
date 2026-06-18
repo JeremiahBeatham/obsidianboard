@@ -20,6 +20,8 @@ export interface TabulaRasaSettings {
 	 * "embed" renders a live inline preview; "link" inserts a plain link.
 	 */
 	noteInsertMode: "embed" | "link";
+	/** Recently used custom brush colors (most recent first), for the color picker. */
+	recentColors: string[];
 }
 
 export const DEFAULT_SETTINGS: TabulaRasaSettings = {
@@ -33,6 +35,7 @@ export const DEFAULT_SETTINGS: TabulaRasaSettings = {
 	pngExportScale: 2,
 	defaultBackground: "transparent",
 	noteInsertMode: "embed",
+	recentColors: [],
 };
 
 export class TabulaRasaSettingTab extends PluginSettingTab {
