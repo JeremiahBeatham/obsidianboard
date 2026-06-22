@@ -27,3 +27,27 @@ Obsidian community plugin for finger/Apple Pencil sketching directly inside a va
 | architecture | `ARCHITECTURE.md` |
 | team / branch ownership | `TEAM.md` |
 | personas | `PERSONAS.md` |
+
+---
+
+## Reorg Status
+
+**Campaign:** BeathamBase doc standard + light refactor (active multi-repo reorg across all 20 repos)
+**Status:** Not started
+
+### BeathamBase doc standard
+Root keeps only: `README.md`, `CLAUDE.md`, `LICENSE` (if present), `SECURITY.md` (if present). Everything else goes in `docs/`. CLAUDE.md must have a routing table pointing to `docs/` paths.
+
+### What needs to happen
+
+1. **Branch:** `TabulaRasa/reorg`
+2. `mkdir docs` then `git mv` these root files into it: `ARCHITECTURE.md`, `PERSONAS.md`, `PHASES.md`, `PRD.md`, `TEAM.md`
+3. Keep `LICENSE` at root (BeathamBase standard allows it)
+4. Update this CLAUDE.md: add routing table pointing to `docs/` paths; remove/update the `ROADMAP.md` reference in Dev Constraints (it doesn't appear to exist at root)
+5. Update `README.md` if it links to root-level docs
+6. Run `npm audit` — check for vulnerabilities in the esbuild-based TypeScript build
+7. **No rename needed** — `TabulaRasa` is already PascalCase
+8. **PR → squash merge → delete branch**
+
+### Notes
+Public repo — Obsidian community plugin. TypeScript + esbuild, standard Obsidian plugin scaffolding (`manifest.json`, `versions.json`, `version-bump.mjs`). Has `.editorconfig`, `.github/`, `LICENSE`. Community plugin submission in progress per CLAUDE.md. `ROADMAP.md` is referenced in Dev Constraints but doesn't appear to be in the repo — likely already removed; clean up that reference.
