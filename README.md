@@ -6,7 +6,7 @@ embed sketches in notes or keep them as standalone, re-editable files.
 
 > **Status:** working MVP (v0.2.0). Install via [BRAT](https://github.com/TfTHacker/obsidian42-brat)
 > today; a community-plugins submission is in progress. See where we are and where
-> we're going in **[ROADMAP.md](ROADMAP.md)**.
+> we're going in **[docs/PHASES.md](docs/PHASES.md)**.
 
 ## Screenshots
 
@@ -97,7 +97,7 @@ Obsidian Sync or a git client) and enable it there.
 
 ## Roadmap
 
-Tabula Rasa is an actively evolving MVP. See **[ROADMAP.md](ROADMAP.md)** for the
+Tabula Rasa is an actively evolving MVP. See **[docs/PHASES.md](docs/PHASES.md)** for the
 shipped feature set and what's planned next (canvas resize, richer brush/color
 pickers, pinch-to-rotate, eraser modes, a selection tool, and smart shape
 snapping).
