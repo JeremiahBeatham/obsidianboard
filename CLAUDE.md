@@ -12,7 +12,7 @@ Obsidian community plugin for finger/Apple Pencil sketching directly inside a va
 ## Dev Constraints
 - Mobile-only dev (iPhone) — no terminal, no local preview.
 - Plugin is TypeScript, bundled via esbuild; standard Obsidian plugin scaffolding (manifest.json, versions.json).
-- `ROADMAP.md` predates this doc set — see note at top of `PHASES.md`.
+- Phases/status live in `docs/PHASES.md`, which supersedes the old `ROADMAP.md` (no longer in the repo).
 
 ## Working Style (default)
 - Short, direct answers. No preamble.
@@ -23,17 +23,18 @@ Obsidian community plugin for finger/Apple Pencil sketching directly inside a va
 ## Where things live
 | Jeremiah says... | File |
 |---|---|
-| status / phases | `PHASES.md` |
-| architecture | `ARCHITECTURE.md` |
-| team / branch ownership | `TEAM.md` |
-| personas | `PERSONAS.md` |
+| status / phases | `docs/PHASES.md` |
+| architecture | `docs/ARCHITECTURE.md` |
+| team / branch ownership | `docs/TEAM.md` |
+| personas | `docs/PERSONAS.md` |
+| product requirements | `docs/PRD.md` |
 
 ---
 
 ## Reorg Status
 
 **Campaign:** BeathamBase doc standard + light refactor (active multi-repo reorg across all 20 repos)
-**Status:** Not started
+**Status:** Done — docs moved to `docs/`, routing table updated, README links fixed, `npm audit` run (see Notes)
 
 ### BeathamBase doc standard
 Root keeps only: `README.md`, `CLAUDE.md`, `LICENSE` (if present), `SECURITY.md` (if present). Everything else goes in `docs/`. CLAUDE.md must have a routing table pointing to `docs/` paths.
@@ -50,4 +51,8 @@ Root keeps only: `README.md`, `CLAUDE.md`, `LICENSE` (if present), `SECURITY.md`
 8. **PR → squash merge → delete branch**
 
 ### Notes
-Public repo — Obsidian community plugin. TypeScript + esbuild, standard Obsidian plugin scaffolding (`manifest.json`, `versions.json`, `version-bump.mjs`). Has `.editorconfig`, `.github/`, `LICENSE`. Community plugin submission in progress per CLAUDE.md. `ROADMAP.md` is referenced in Dev Constraints but doesn't appear to be in the repo — likely already removed; clean up that reference.
+Public repo — Obsidian community plugin. TypeScript + esbuild, standard Obsidian plugin scaffolding (`manifest.json`, `versions.json`, `version-bump.mjs`). Has `.editorconfig`, `.github/`, `LICENSE`.
+
+- Reorg executed on branch `claude/claude-md-review-reorg-0vvwo6` (the session's assigned branch) rather than `TabulaRasa/reorg`.
+- Confirmed `ROADMAP.md` was not in the repo; stale references removed from CLAUDE.md and README (README now points to `docs/PHASES.md`).
+- `npm audit`: 1 moderate — `esbuild <=0.24.2` dev-server request advisory (GHSA-67mh-4wv8-2f99). Dev-only dependency; the only fix is a breaking bump to `esbuild@0.28.1`, left for a deliberate dependency upgrade rather than this docs reorg.
